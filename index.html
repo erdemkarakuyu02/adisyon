@@ -2,39 +2,30 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Çalıkuşu Kafe - Mutfaklı POS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Çalıkuşu Kafe - Profesyonel Adisyon</title>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>body{font-family:'Inter',sans-serif; background:#f8fafc; height:100dvh;}</style>
 </head>
-<body class="flex flex-col h-full overflow-hidden">
-
-    <header class="bg-rose-950 text-white px-4 py-3 flex justify-between items-center shadow-lg shrink-0">
-        <h1 class="font-bold text-lg"><i class="fa-brands fa-earlybirds mr-2"></i>Çalıkuşu Kafe</h1>
-        <button onclick="openReportsModal()" class="bg-rose-800 px-3 py-1.5 rounded-lg text-xs font-semibold">Raporlar</button>
-    </header>
+<body class="bg-slate-50 h-screen flex flex-col font-sans">
 
     <div id="kitchen-panel" class="bg-red-50 p-4 border-b border-red-200 hidden shrink-0">
-        <h3 class="font-bold text-red-800 text-sm mb-3"><i class="fa-solid fa-bell mr-2"></i>Yeni Siparişler (Onay Bekliyor)</h3>
-        <div id="pending-orders-list" class="flex gap-3 overflow-x-auto pb-2"></div>
+        <h3 class="font-bold text-red-900 text-sm mb-2"><i class="fa-solid fa-bell mr-2"></i>ONAY BEKLEYEN SİPARİŞLER</h3>
+        <div id="pending-orders-list" class="flex gap-3 overflow-x-auto"></div>
     </div>
 
     <main class="flex-1 flex overflow-hidden">
         <section class="flex-1 p-4 overflow-y-auto">
-            <div id="tables-grid" class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6"></div>
-            <div id="menu-items-grid" class="grid grid-cols-3 md:grid-cols-5 gap-2"></div>
+            <div id="tables-grid" class="grid grid-cols-4 gap-3 mb-6"></div>
+            <div id="menu-grid" class="grid grid-cols-4 gap-2"></div>
         </section>
 
-        <aside id="adisyon-sidebar" class="w-80 bg-white border-l p-4 flex flex-col shadow-xl">
-            <h2 id="active-table-name" class="font-bold text-lg mb-4">Masa Seçin</h2>
-            <div id="order-items-container" class="flex-1 overflow-y-auto space-y-2 text-sm"></div>
-            
-            <button id="btn-send-to-kitchen" onclick="sendOrderToKitchen()" disabled class="w-full bg-rose-700 text-white py-3 rounded-xl font-bold mt-4 disabled:opacity-50">Siparişi Gönder</button>
-            <button id="btn-pay-cash" onclick="processPayment('Nakit')" disabled class="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold mt-2 disabled:opacity-50">Nakit Ödeme</button>
+        <aside class="w-80 bg-white border-l p-4 flex flex-col">
+            <h2 id="selected-table-name" class="font-bold text-lg mb-2">Masa Seçin</h2>
+            <div id="order-list" class="flex-1 overflow-y-auto space-y-2 mb-4"></div>
+            <button onclick="sendOrder()" class="w-full bg-rose-700 text-white p-3 rounded-lg font-bold">Mutfağa Gönder</button>
+            <button onclick="payOrder()" class="w-full bg-emerald-600 text-white p-3 rounded-lg font-bold mt-2">Ödeme Al</button>
         </aside>
     </main>
 
@@ -49,76 +40,88 @@
             appId: "1:755014927811:web:557f08cfdc920ffaaea976"
         };
         firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
+        const db = firebase.database();
 
-        let state = { tables: {}, menu: [], pendingOrders: [], selectedTableId: null };
+        let state = { tables: {}, menu: [], pending: [], selectedTableId: null };
 
-        // --- Firebase Senkronizasyon ---
-        database.ref('state').on('value', (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                state = data;
-                renderUI();
-            } else { initDefaultState(); }
+        db.ref('pos_data').on('value', (snap) => {
+            if(snap.val()) { state = snap.val(); updateUI(); } else { init(); }
         });
 
-        function save() { database.ref('state').set(state); }
-
-        function renderUI() {
-            renderTables();
-            renderMenuItems();
-            renderPendingOrders();
-            if (state.selectedTableId) renderActiveOrder();
-        }
-
-        // --- Mutfak Akışı ---
-        function sendOrderToKitchen() {
-            const t = state.tables[state.selectedTableId];
-            if (!t.orders || t.orders.length === 0) return;
-
-            state.pendingOrders.push({
-                id: Date.now(),
-                tableId: state.selectedTableId,
-                tableName: t.name,
-                orders: [...t.orders],
-                time: new Date().toLocaleTimeString('tr-TR', {hour:'2-digit', minute:'2-digit'})
-            });
-            t.orders = []; // Garsonun ekranından temizle
+        function init() {
+            state.menu = [{id:1, name:"Çay", price:25}, {id:2, name:"Kahve", price:60}, {id:3, name:"Tost", price:120}];
+            for(let i=1; i<=12; i++) state.tables[i] = {id:i, name:"Masa "+i, orders:[], status:'empty'};
             save();
         }
 
-        function renderPendingOrders() {
-            const list = document.getElementById('pending-orders-list');
-            const panel = document.getElementById('kitchen-panel');
-            list.innerHTML = '';
-            if (!state.pendingOrders || state.pendingOrders.length === 0) {
-                panel.classList.add('hidden'); return;
+        function save() { db.ref('pos_data').set(state); }
+
+        function updateUI() {
+            // Masalar
+            const g = document.getElementById('tables-grid'); g.innerHTML = '';
+            Object.values(state.tables).forEach(t => {
+                const b = document.createElement('button');
+                b.className = `p-4 rounded-xl border ${state.selectedTableId == t.id ? 'bg-rose-200 border-rose-500' : 'bg-white'} ${t.status === 'occupied' ? 'border-l-4 border-l-rose-600' : ''}`;
+                b.innerText = t.name;
+                b.onclick = () => { state.selectedTableId = t.id; save(); };
+                g.appendChild(b);
+            });
+
+            // Bekleyen Siparişler
+            const pL = document.getElementById('pending-orders-list');
+            const pP = document.getElementById('kitchen-panel');
+            pL.innerHTML = '';
+            if(state.pending && state.pending.length > 0) {
+                pP.classList.remove('hidden');
+                state.pending.forEach(p => {
+                    const d = document.createElement('div');
+                    d.className = "bg-white p-3 rounded-lg border border-red-200 text-xs shadow-sm min-w-[150px]";
+                    d.innerHTML = `<b>${p.tableName}</b><br>${p.orders.map(o=>o.name).join(', ')}<br><button onclick="approve(${p.id})" class="bg-emerald-600 text-white w-full mt-2 py-1 rounded">Onayla</button>`;
+                    pL.appendChild(d);
+                });
+            } else pP.classList.add('hidden');
+
+            // Adisyon Listesi
+            const oL = document.getElementById('order-list'); oL.innerHTML = '';
+            if(state.selectedTableId && state.tables[state.selectedTableId]) {
+                const t = state.tables[state.selectedTableId];
+                document.getElementById('selected-table-name').innerText = t.name;
+                t.orders.forEach(o => oL.innerHTML += `<div class="p-2 bg-slate-50 rounded text-sm">${o.name} - ${o.price} ₺</div>`);
             }
-            panel.classList.remove('hidden');
-            state.pendingOrders.forEach(o => {
-                const card = document.createElement('div');
-                card.className = "bg-white p-3 rounded-xl border border-red-200 min-w-[200px] shadow-sm";
-                card.innerHTML = `
-                    <p class="font-bold text-red-700">${o.tableName}</p>
-                    <p class="text-xs text-slate-500">${o.time}</p>
-                    <div class="text-xs my-2">${o.orders.map(x => x.qty+'x '+x.product.name).join(', ')}</div>
-                    <button onclick="approveOrder(${o.id})" class="w-full bg-emerald-600 text-white text-xs py-1.5 rounded">Onayla</button>
-                `;
-                list.appendChild(card);
-            });
         }
 
-        function approveOrder(id) {
-            const o = state.pendingOrders.find(x => x.id === id);
-            const t = state.tables[o.tableId];
-            t.orders = [...t.orders, ...o.orders]; // Adisyona ekle
-            t.status = 'occupied';
-            state.pendingOrders = state.pendingOrders.filter(x => x.id !== id);
+        function sendOrder() {
+            const t = state.tables[state.selectedTableId];
+            if(!t.orders.length) return;
+            if(!state.pending) state.pending = [];
+            state.pending.push({id: Date.now(), tableId: t.id, tableName: t.name, orders: [...t.orders]});
+            t.orders = []; // Garsonun ekranından sildik
             save();
         }
 
-        // ... Diğer yardımcı fonksiyonlar (renderTables, renderMenuItems, vs.) önceki kodun aynısı ...
-        // Not: Tüm fonksiyonları bu yapının altına eksiksiz eklemeyi unutma.
+        function approve(id) {
+            const p = state.pending.find(x => x.id === id);
+            state.tables[p.tableId].orders = [...state.tables[p.tableId].orders, ...p.orders];
+            state.tables[p.tableId].status = 'occupied';
+            state.pending = state.pending.filter(x => x.id !== id);
+            save();
+        }
+
+        function payOrder() {
+            state.tables[state.selectedTableId].orders = [];
+            state.tables[state.selectedTableId].status = 'empty';
+            save();
+        }
+
+        // Menü Render
+        const mG = document.getElementById('menu-grid');
+        state.menu.forEach(p => {
+            const b = document.createElement('button');
+            b.className = "p-2 bg-white rounded border text-sm";
+            b.innerText = p.name;
+            b.onclick = () => { state.tables[state.selectedTableId].orders.push(p); save(); };
+            mG.appendChild(b);
+        });
     </script>
 </body>
 </html>
