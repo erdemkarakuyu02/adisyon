@@ -4,63 +4,134 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Patika Teras Kafe - Adisyon Sistemi</title>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #f7f6f3; }
-        .font-serif { font-family: 'Playfair Display', serif; }
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #f1f1f1; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 </head>
 <body class="h-screen flex flex-col overflow-hidden text-slate-800">
 
     <header class="bg-amber-950 text-amber-50 px-6 py-4 flex items-center justify-between shadow-md shrink-0">
         <div class="flex items-center space-x-3">
-            <div class="bg-amber-700 p-2.5 rounded-xl shadow-inner flex items-center justify-center">
-                <i class="fa-solid fa-mug-hot text-xl text-amber-100 animate-pulse"></i>
+            <div class="bg-amber-700 p-2.5 rounded-xl flex items-center justify-center">
+                <i class="fa-solid fa-mug-hot text-xl text-amber-100"></i>
             </div>
             <div>
-                <h1 class="font-serif text-2xl font-bold tracking-wide">Patika Teras Kafe</h1>
-                <p class="text-xs text-amber-200/80 tracking-widest uppercase">Adisyon & POS Sistemi</p>
+                <h1 class="text-2xl font-bold tracking-wide">Patika Teras Kafe</h1>
+                <p class="text-xs text-amber-200/80 uppercase tracking-widest">Adisyon & POS Sistemi</p>
             </div>
         </div>
-        <div class="flex items-center space-x-4">
-            <div id="live-clock" class="font-mono font-medium">--.--.---- - --:--:--</div>
-            <button onclick="openReportsModal()" class="bg-amber-700 hover:bg-amber-600 px-4 py-2 rounded-lg flex items-center space-x-2 text-sm font-medium">
-                <i class="fa-solid fa-chart-line"></i><span>Raporlar</span>
-            </button>
-        </div>
+        <div id="live-clock" class="font-mono text-sm bg-amber-900/40 px-4 py-2 rounded-lg"></div>
     </header>
 
     <main class="flex-1 flex overflow-hidden">
         <section class="flex-1 p-6 overflow-y-auto">
-            <div id="tables-grid" class="grid grid-cols-4 gap-4"></div>
-            <div id="menu-items-grid" class="grid grid-cols-4 gap-3 mt-8"></div>
+            <div id="tables-grid" class="grid grid-cols-4 gap-4 mb-8"></div>
+            <div id="menu-items-grid" class="grid grid-cols-4 gap-3"></div>
         </section>
 
-        <aside class="w-[420px] bg-white border-l border-slate-200 flex flex-col h-full shadow-2xl">
-            <div class="p-5 border-b border-slate-200 flex justify-between items-center">
+        <aside class="w-[420px] bg-white border-l border-slate-200 flex flex-col shadow-2xl">
+            <div class="p-5 border-b flex justify-between items-center">
                 <h3 id="active-table-name" class="font-bold text-lg">Masa Seçin</h3>
                 <button onclick="resetSelectedTable()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
-            <div id="order-items-container" class="flex-1 overflow-y-auto p-5 space-y-4"></div>
+            <div id="order-items-container" class="flex-1 overflow-y-auto p-5 space-y-3"></div>
             <div class="p-5 border-t bg-slate-50 space-y-3">
                 <div class="flex justify-between font-bold text-lg"><span>Toplam:</span><span id="order-total-price">0.00 ₺</span></div>
                 <div class="grid grid-cols-2 gap-2">
-                    <button onclick="processPayment('Kart')" class="bg-indigo-600 text-white py-3 rounded-lg font-bold">KART</button>
-                    <button onclick="processPayment('Nakit')" class="bg-emerald-600 text-white py-3 rounded-lg font-bold">NAKİT</button>
+                    <button onclick="processPayment('Kart')" class="bg-indigo-600 text-white py-3 rounded-lg font-bold">KART ÖDEME</button>
+                    <button onclick="processPayment('Nakit')" class="bg-emerald-600 text-white py-3 rounded-lg font-bold">NAKİT ÖDEME</button>
                 </div>
             </div>
         </aside>
     </main>
 
     <script>
-        // Bu noktadan aşağıya en başta paylaştığın çalışan JS kodlarını yapıştırabilirsin.
-        // İsim "Patika Teras Kafe" olarak güncellendi, tema değişmedi.
+        const firebaseConfig = {
+            apiKey: "AIzaSyAUXrOuTaBdi9ne6WwguNWkeZANs0x8k4Y",
+            authDomain: "calikusu-kafe.firebaseapp.com",
+            databaseURL: "https://calikusu-kafe-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "calikusu-kafe",
+            storageBucket: "calikusu-kafe.firebasestorage.app",
+            messagingSenderId: "755014927811",
+            appId: "1:755014927811:web:557f08cfdc920ffaaea976"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        let state = { tables: {}, menu: [], selectedTableId: null };
+
+        // Firebase'den Veriyi Dinle
+        database.ref('patika_pos_state').on('value', (snapshot) => {
+            if(snapshot.val()) {
+                state = snapshot.val();
+                render();
+            } else {
+                initDefaultState();
+            }
+        });
+
+        function initDefaultState() {
+            state.menu = [{id:1, name:"Çay", price:25}, {id:2, name:"Kahve", price:60}, {id:3, name:"Tost", price:120}];
+            for(let i=1; i<=12; i++) state.tables[i] = {id:i, name:"Masa "+i, orders:[], status:'empty'};
+            save();
+        }
+
+        function save() { database.ref('patika_pos_state').set(state); }
+
+        function render() {
+            // Masaları Çiz
+            const grid = document.getElementById('tables-grid');
+            grid.innerHTML = '';
+            Object.values(state.tables).forEach(t => {
+                const b = document.createElement('button');
+                b.className = `p-4 rounded-xl border-2 transition ${state.selectedTableId == t.id ? 'bg-amber-100 border-amber-500' : 'bg-white border-slate-200'}`;
+                b.innerText = t.name;
+                b.onclick = () => { state.selectedTableId = t.id; save(); };
+                grid.appendChild(b);
+            });
+
+            // Adisyonu Çiz
+            const oL = document.getElementById('order-items-container');
+            oL.innerHTML = '';
+            if(state.selectedTableId && state.tables[state.selectedTableId]) {
+                const t = state.tables[state.selectedTableId];
+                document.getElementById('active-table-name').innerText = t.name;
+                t.orders.forEach(o => oL.innerHTML += `<div class="p-2 bg-slate-50 rounded flex justify-between"><span>${o.name}</span> <span>${o.price}₺</span></div>`);
+            }
+            
+            // Menü Render
+            const mG = document.getElementById('menu-items-grid');
+            mG.innerHTML = '';
+            state.menu.forEach(p => {
+                const b = document.createElement('button');
+                b.className = "bg-white p-3 rounded-lg border text-sm hover:border-amber-500";
+                b.innerText = p.name;
+                b.onclick = () => {
+                    if(!state.selectedTableId) return alert("Masa seç!");
+                    state.tables[state.selectedTableId].orders.push(p);
+                    state.tables[state.selectedTableId].status = 'occupied';
+                    save();
+                };
+                mG.appendChild(b);
+            });
+        }
+
+        function processPayment(m) {
+            state.tables[state.selectedTableId].orders = [];
+            state.tables[state.selectedTableId].status = 'empty';
+            save();
+        }
+        function resetSelectedTable() { state.selectedTableId = null; render(); }
+        
+        setInterval(() => document.getElementById('live-clock').innerText = new Date().toLocaleTimeString(), 1000);
     </script>
 </body>
 </html>
