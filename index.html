@@ -3,136 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Patika Teras Kafe - POS</title>
-    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
+    <title>Patika Teras Kafe - Adisyon Sistemi</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Açık, modern, ferah tema */
-        body { background: #f8fafc; color: #334155; font-family: sans-serif; }
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
     </style>
 </head>
-<body class="h-screen flex flex-col">
+<body class="h-screen flex flex-col overflow-hidden text-slate-800">
 
-    <header class="bg-white border-b p-4 flex justify-between items-center shadow-sm">
-        <h1 class="font-bold text-lg text-amber-800">Patika Teras Kafe</h1>
-        <div id="status" class="text-xs bg-slate-100 px-2 py-1 rounded">Senkronize Ediliyor...</div>
+    <header class="bg-amber-800 text-amber-50 px-6 py-4 flex items-center justify-between shadow-md shrink-0">
+        <div>
+            <h1 class="text-2xl font-bold tracking-wide">Patika Teras Kafe</h1>
+            <p class="text-xs text-amber-200 uppercase tracking-widest">Adisyon & POS</p>
+        </div>
+        <div id="live-clock" class="font-mono text-sm bg-amber-900/30 px-3 py-1 rounded"></div>
     </header>
 
-    <div id="kitchen-box" class="bg-amber-50 p-3 border-b hidden">
-        <h2 class="text-xs font-bold text-amber-800 mb-2">ONAY BEKLEYEN SİPARİŞLER</h2>
-        <div id="pending-list" class="flex gap-2"></div>
-    </div>
+    <main class="flex-1 flex overflow-hidden">
+        <section class="flex-1 p-6 overflow-y-auto">
+            <div id="tables-grid" class="grid grid-cols-4 gap-4 mb-8"></div>
+            <div id="menu-items-grid" class="grid grid-cols-4 gap-3"></div>
+        </section>
 
-    <div class="flex-1 flex overflow-hidden">
-        <div class="flex-1 p-4 overflow-y-auto">
-            <div id="tables-container" class="grid grid-cols-3 gap-3"></div>
-        </div>
-        <div class="w-80 bg-white border-l p-4 flex flex-col shadow-lg">
-            <h2 id="active-table" class="font-bold text-lg mb-2 text-slate-700">Masa Seçin</h2>
-            <div id="order-list" class="flex-1 overflow-y-auto space-y-2"></div>
-            <div class="space-y-2 mt-4">
-                <button onclick="sendOrder()" class="w-full bg-amber-700 text-white p-3 rounded font-bold">Mutfağa Gönder</button>
-                <button onclick="clearOrder()" class="w-full bg-slate-200 text-slate-700 p-3 rounded font-bold">Ödeme / Temizle</button>
+        <aside class="w-96 bg-white border-l p-6 flex flex-col shadow-lg">
+            <h2 id="active-table-name" class="text-xl font-bold mb-4">Masa Seçin</h2>
+            <div id="order-items-container" class="flex-1 overflow-y-auto space-y-2"></div>
+            <div class="pt-4 border-t space-y-2">
+                <button onclick="processPayment('Nakit')" class="w-full bg-emerald-600 text-white py-3 rounded-lg font-bold">Nakit Ödeme</button>
+                <button onclick="processPayment('Kart')" class="w-full bg-indigo-600 text-white py-3 rounded-lg font-bold">Kart Ödeme</button>
+                <button onclick="triggerOrderCancellation()" class="w-full bg-red-100 text-red-600 py-2 rounded-lg font-semibold text-sm">Adisyonu İptal Et</button>
             </div>
-        </div>
-    </div>
+        </aside>
+    </main>
 
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyAUXrOuTaBdi9ne6WwguNWkeZANs0x8k4Y",
-            authDomain: "calikusu-kafe.firebaseapp.com",
-            databaseURL: "https://calikusu-kafe-default-rtdb.europe-west1.firebasedatabase.app",
-            projectId: "calikusu-kafe",
-            storageBucket: "calikusu-kafe.firebasestorage.app",
-            messagingSenderId: "755014927811",
-            appId: "1:755014927811:web:557f08cfdc920ffaaea976"
+        // --- State ---
+        let state = { tables: {}, menu: [], selectedTableId: null };
+
+        // --- Başlatma ---
+        window.onload = function() {
+            initDefaultState();
+            render();
+            setInterval(() => {
+                document.getElementById('live-clock').textContent = new Date().toLocaleTimeString('tr-TR');
+            }, 1000);
         };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
 
-        let state = { tables: {}, pending: [], selectedId: null };
-
-        // Firebase'i Dinle
-        db.ref('patika_data').on('value', (s) => {
-            if(s.val()) { state = s.val(); render(); }
-            else { init(); }
-        });
-
-        function init() {
-            state.tables = {};
-            for(let i=1; i<=12; i++) state.tables[i] = {id:i, name:"Masa "+i, items:[]};
-            save();
+        function initDefaultState() {
+            state.menu = [
+                {id: 1, name: "Çay", price: 25}, {id: 2, name: "Kahve", price: 60}, 
+                {id: 3, name: "Tost", price: 120}, {id: 4, name: "San Sebastian", price: 160}
+            ];
+            for(let i=1; i<=12; i++) state.tables[i] = {id:i, name:"Masa "+i, orders:[], status:'empty'};
         }
 
-        function save() { db.ref('patika_data').set(state); }
-
+        // --- Render ---
         function render() {
-            // Masaları Çiz
-            const tCont = document.getElementById('tables-container');
-            tCont.innerHTML = '';
+            const grid = document.getElementById('tables-grid');
+            grid.innerHTML = '';
             Object.values(state.tables).forEach(t => {
-                const b = document.createElement('button');
-                b.className = `p-4 rounded border ${state.selectedId == t.id ? 'bg-amber-100 border-amber-400' : 'bg-white border-slate-200'}`;
-                b.innerText = t.name;
-                b.onclick = () => { state.selectedId = t.id; render(); };
-                tCont.appendChild(b);
+                const btn = document.createElement('button');
+                btn.className = `p-4 rounded-xl border-2 transition ${state.selectedTableId == t.id ? 'bg-amber-100 border-amber-500' : 'bg-white border-slate-200'}`;
+                btn.innerText = t.name;
+                btn.onclick = () => { state.selectedTableId = t.id; render(); };
+                grid.appendChild(btn);
             });
 
-            // Bekleyenleri Çiz
-            const pCont = document.getElementById('pending-list');
-            const kBox = document.getElementById('kitchen-box');
-            pCont.innerHTML = '';
-            if(state.pending && state.pending.length > 0) {
-                kBox.classList.remove('hidden');
-                state.pending.forEach(p => {
-                    const d = document.createElement('div');
-                    d.className = "bg-white p-2 rounded text-[10px] border border-amber-200 w-32";
-                    d.innerHTML = `<b>${p.tableName}</b><br>${p.items.map(i=>i.name).join(',')}<br>
-                    <button onclick="approve(${p.id})" class="w-full bg-green-600 text-white mt-1 rounded">Onayla</button>`;
-                    pCont.appendChild(d);
-                });
-            } else kBox.classList.add('hidden');
+            const mGrid = document.getElementById('menu-items-grid');
+            mGrid.innerHTML = '';
+            state.menu.forEach(p => {
+                const b = document.createElement('button');
+                b.className = "bg-white p-3 rounded-lg border text-sm hover:border-amber-500";
+                b.innerText = p.name;
+                b.onclick = () => {
+                    if(!state.selectedTableId) return alert("Masa seç!");
+                    state.tables[state.selectedTableId].orders.push(p);
+                    state.tables[state.selectedTableId].status = 'occupied';
+                    render();
+                };
+                mGrid.appendChild(b);
+            });
 
-            // Adisyon Listesi
-            const oL = document.getElementById('order-list');
+            const oL = document.getElementById('order-items-container');
             oL.innerHTML = '';
-            if(state.selectedId && state.tables[state.selectedId]) {
-                const t = state.tables[state.selectedId];
-                document.getElementById('active-table').innerText = t.name;
-                t.items.forEach(i => oL.innerHTML += `<div class="p-2 bg-slate-100 rounded text-sm">${i.name}</div>`);
-                
-                // Menü Butonları (Örnek)
-                const menu = [{name:"Çay", price:25}, {name:"Kahve", price:60}];
-                menu.forEach(m => {
-                    const b = document.createElement('button');
-                    b.className = "block w-full bg-white p-2 border text-left text-sm rounded mt-1";
-                    b.innerText = m.name;
-                    b.onclick = () => { t.items.push(m); render(); };
-                    oL.appendChild(b);
-                });
+            if(state.selectedTableId) {
+                const t = state.tables[state.selectedTableId];
+                document.getElementById('active-table-name').innerText = t.name;
+                t.orders.forEach((o, idx) => oL.innerHTML += `<div class="p-2 bg-slate-50 rounded flex justify-between">${o.name} <span>${o.price}₺</span></div>`);
             }
         }
 
-        function sendOrder() {
-            const t = state.tables[state.selectedId];
-            if(!t.items.length) return;
-            if(!state.pending) state.pending = [];
-            state.pending.push({id: Date.now(), tableId: t.id, tableName: t.name, items: [...t.items]});
-            t.items = [];
-            save();
+        function processPayment(m) {
+            state.tables[state.selectedTableId].orders = [];
+            state.tables[state.selectedTableId].status = 'empty';
+            render();
         }
 
-        function approve(id) {
-            const p = state.pending.find(x => x.id === id);
-            state.tables[p.tableId].items = [...state.tables[p.tableId].items, ...p.items];
-            state.pending = state.pending.filter(x => x.id !== id);
-            save();
-        }
-
-        function clearOrder() {
-            state.tables[state.selectedId].items = [];
-            save();
+        function triggerOrderCancellation() {
+            state.tables[state.selectedTableId].orders = [];
+            state.tables[state.selectedTableId].status = 'empty';
+            render();
         }
     </script>
 </body>
