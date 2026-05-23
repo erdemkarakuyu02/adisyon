@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="tr">
-<head>
+<!-- Firebase Kütüphaneleri -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
+    <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Çalıkuşu Kafe - Adisyon & POS Sistemi</title>
@@ -544,6 +547,19 @@
 
     <!-- JAVASCRIPT -->
     <script>
+        const firebaseConfig = {
+  apiKey: "AIzaSyAUXrOuTaBdi9ne6WwguNWkeZANs0x8k4Y",
+  authDomain: "calikusu-kafe.firebaseapp.com",
+  databaseURL: "https://calikusu-kafe-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "calikusu-kafe",
+  storageBucket: "calikusu-kafe.firebasestorage.app",
+  messagingSenderId: "755014927811",
+  appId: "1:755014927811:web:557f08cfdc920ffaaea976"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+        const database = firebase.database();-
         // --- 1. Uygulama Verileri & State ---
         const defaultMenu = [
             { id: 1, name: "Espresso", price: 60.00, category: "Sıcak İçecekler", emoji: "☕" },
@@ -611,16 +627,24 @@
             }, 1000);
         }
 
-        function loadStateFromLocalStorage() {
-            const savedState = localStorage.getItem(STORAGE_KEY);
-            if (savedState) {
-                try { state = JSON.parse(savedState); } 
-                catch (e) { initDefaultState(); }
-            } else {
-                initDefaultState();
-            }
+       function loadStateFromLocalStorage() {
+            database.ref('calikusu_pos_state').on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    state = data;
+                    renderCategoryTabs();
+                    renderMenuItems();
+                    renderTables();
+                    updateStats();
+                    if (state.selectedTableId) {
+                        renderActiveOrder();
+                        updateMobileFAB();
+                    }
+                } else {
+                    initDefaultState();
+                }
+            });
         }
-
         function initDefaultState() {
             state.menu = [...defaultMenu];
             state.tables = {};
@@ -635,8 +659,8 @@
             saveStateToLocalStorage();
         }
 
-        function saveStateToLocalStorage() {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+       function saveStateToLocalStorage() {
+            database.ref('calikusu_pos_state').set(state);
         }
 
         // --- Mobil Adisyon (Drawer & FAB) Mantığı ---
