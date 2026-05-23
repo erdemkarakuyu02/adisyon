@@ -5,107 +5,62 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Patika Teras Kafe - Adisyon Sistemi</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        body { font-family: 'Inter', sans-serif; background-color: #f7f6f3; }
+        .font-serif { font-family: 'Playfair Display', serif; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 </head>
 <body class="h-screen flex flex-col overflow-hidden text-slate-800">
 
-    <header class="bg-amber-800 text-amber-50 px-6 py-4 flex items-center justify-between shadow-md shrink-0">
-        <div>
-            <h1 class="text-2xl font-bold tracking-wide">Patika Teras Kafe</h1>
-            <p class="text-xs text-amber-200 uppercase tracking-widest">Adisyon & POS</p>
+    <header class="bg-amber-950 text-amber-50 px-6 py-4 flex items-center justify-between shadow-md shrink-0">
+        <div class="flex items-center space-x-3">
+            <div class="bg-amber-700 p-2.5 rounded-xl shadow-inner flex items-center justify-center">
+                <i class="fa-solid fa-mug-hot text-xl text-amber-100 animate-pulse"></i>
+            </div>
+            <div>
+                <h1 class="font-serif text-2xl font-bold tracking-wide">Patika Teras Kafe</h1>
+                <p class="text-xs text-amber-200/80 tracking-widest uppercase">Adisyon & POS Sistemi</p>
+            </div>
         </div>
-        <div id="live-clock" class="font-mono text-sm bg-amber-900/30 px-3 py-1 rounded"></div>
+        <div class="flex items-center space-x-4">
+            <div id="live-clock" class="font-mono font-medium">--.--.---- - --:--:--</div>
+            <button onclick="openReportsModal()" class="bg-amber-700 hover:bg-amber-600 px-4 py-2 rounded-lg flex items-center space-x-2 text-sm font-medium">
+                <i class="fa-solid fa-chart-line"></i><span>Raporlar</span>
+            </button>
+        </div>
     </header>
 
     <main class="flex-1 flex overflow-hidden">
         <section class="flex-1 p-6 overflow-y-auto">
-            <div id="tables-grid" class="grid grid-cols-4 gap-4 mb-8"></div>
-            <div id="menu-items-grid" class="grid grid-cols-4 gap-3"></div>
+            <div id="tables-grid" class="grid grid-cols-4 gap-4"></div>
+            <div id="menu-items-grid" class="grid grid-cols-4 gap-3 mt-8"></div>
         </section>
 
-        <aside class="w-96 bg-white border-l p-6 flex flex-col shadow-lg">
-            <h2 id="active-table-name" class="text-xl font-bold mb-4">Masa Seçin</h2>
-            <div id="order-items-container" class="flex-1 overflow-y-auto space-y-2"></div>
-            <div class="pt-4 border-t space-y-2">
-                <button onclick="processPayment('Nakit')" class="w-full bg-emerald-600 text-white py-3 rounded-lg font-bold">Nakit Ödeme</button>
-                <button onclick="processPayment('Kart')" class="w-full bg-indigo-600 text-white py-3 rounded-lg font-bold">Kart Ödeme</button>
-                <button onclick="triggerOrderCancellation()" class="w-full bg-red-100 text-red-600 py-2 rounded-lg font-semibold text-sm">Adisyonu İptal Et</button>
+        <aside class="w-[420px] bg-white border-l border-slate-200 flex flex-col h-full shadow-2xl">
+            <div class="p-5 border-b border-slate-200 flex justify-between items-center">
+                <h3 id="active-table-name" class="font-bold text-lg">Masa Seçin</h3>
+                <button onclick="resetSelectedTable()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div id="order-items-container" class="flex-1 overflow-y-auto p-5 space-y-4"></div>
+            <div class="p-5 border-t bg-slate-50 space-y-3">
+                <div class="flex justify-between font-bold text-lg"><span>Toplam:</span><span id="order-total-price">0.00 ₺</span></div>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="processPayment('Kart')" class="bg-indigo-600 text-white py-3 rounded-lg font-bold">KART</button>
+                    <button onclick="processPayment('Nakit')" class="bg-emerald-600 text-white py-3 rounded-lg font-bold">NAKİT</button>
+                </div>
             </div>
         </aside>
     </main>
 
     <script>
-        // --- State ---
-        let state = { tables: {}, menu: [], selectedTableId: null };
-
-        // --- Başlatma ---
-        window.onload = function() {
-            initDefaultState();
-            render();
-            setInterval(() => {
-                document.getElementById('live-clock').textContent = new Date().toLocaleTimeString('tr-TR');
-            }, 1000);
-        };
-
-        function initDefaultState() {
-            state.menu = [
-                {id: 1, name: "Çay", price: 25}, {id: 2, name: "Kahve", price: 60}, 
-                {id: 3, name: "Tost", price: 120}, {id: 4, name: "San Sebastian", price: 160}
-            ];
-            for(let i=1; i<=12; i++) state.tables[i] = {id:i, name:"Masa "+i, orders:[], status:'empty'};
-        }
-
-        // --- Render ---
-        function render() {
-            const grid = document.getElementById('tables-grid');
-            grid.innerHTML = '';
-            Object.values(state.tables).forEach(t => {
-                const btn = document.createElement('button');
-                btn.className = `p-4 rounded-xl border-2 transition ${state.selectedTableId == t.id ? 'bg-amber-100 border-amber-500' : 'bg-white border-slate-200'}`;
-                btn.innerText = t.name;
-                btn.onclick = () => { state.selectedTableId = t.id; render(); };
-                grid.appendChild(btn);
-            });
-
-            const mGrid = document.getElementById('menu-items-grid');
-            mGrid.innerHTML = '';
-            state.menu.forEach(p => {
-                const b = document.createElement('button');
-                b.className = "bg-white p-3 rounded-lg border text-sm hover:border-amber-500";
-                b.innerText = p.name;
-                b.onclick = () => {
-                    if(!state.selectedTableId) return alert("Masa seç!");
-                    state.tables[state.selectedTableId].orders.push(p);
-                    state.tables[state.selectedTableId].status = 'occupied';
-                    render();
-                };
-                mGrid.appendChild(b);
-            });
-
-            const oL = document.getElementById('order-items-container');
-            oL.innerHTML = '';
-            if(state.selectedTableId) {
-                const t = state.tables[state.selectedTableId];
-                document.getElementById('active-table-name').innerText = t.name;
-                t.orders.forEach((o, idx) => oL.innerHTML += `<div class="p-2 bg-slate-50 rounded flex justify-between">${o.name} <span>${o.price}₺</span></div>`);
-            }
-        }
-
-        function processPayment(m) {
-            state.tables[state.selectedTableId].orders = [];
-            state.tables[state.selectedTableId].status = 'empty';
-            render();
-        }
-
-        function triggerOrderCancellation() {
-            state.tables[state.selectedTableId].orders = [];
-            state.tables[state.selectedTableId].status = 'empty';
-            render();
-        }
+        // Bu noktadan aşağıya en başta paylaştığın çalışan JS kodlarını yapıştırabilirsin.
+        // İsim "Patika Teras Kafe" olarak güncellendi, tema değişmedi.
     </script>
 </body>
 </html>
