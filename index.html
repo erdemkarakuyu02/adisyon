@@ -56,7 +56,7 @@
         </div>
 
         <div class="flex items-center space-x-2 sm:space-x-4 mt-2 sm:mt-0 w-full sm:w-auto justify-between sm:justify-end">
-            <!-- CİHAZ ROLÜ SEÇİCİ (Mobil cihazlarda hidden sınıfı ile gizlendi) -->
+            <!-- CİHAZ ROLÜ SEÇİCİ -->
             <select id="device-role" onchange="changeRoleManually()" class="hidden lg:block bg-amber-900 text-amber-50 text-[10px] sm:text-xs px-2 py-2 rounded-lg border border-amber-700 outline-none font-bold cursor-pointer shadow-inner">
                 <option value="kasa">💻 Kasa / Yetkili</option>
                 <option value="garson">📱 Garson</option>
@@ -66,7 +66,7 @@
                 <p class="text-[10px] text-amber-300 uppercase tracking-wider font-semibold">Günlük Ciro</p>
                 <p id="header-total-revenue" class="text-lg sm:text-xl font-bold text-emerald-400 font-mono">0.00 ₺</p>
             </div>
-            <button onclick="openModal('reports-modal')" class="only-kasa bg-amber-700 hover:bg-amber-600 active:scale-95 transition px-3 py-2 sm:px-4 rounded-lg flex items-center space-x-2 text-xs sm:text-sm font-medium shadow-sm border border-amber-600/50">
+            <button onclick="openReportsModal()" class="only-kasa bg-amber-700 hover:bg-amber-600 active:scale-95 transition px-3 py-2 sm:px-4 rounded-lg flex items-center space-x-2 text-xs sm:text-sm font-medium shadow-sm border border-amber-600/50">
                 <i class="fa-solid fa-chart-line"></i>
                 <span class="hidden sm:inline">Raporlar</span>
             </button>
@@ -138,7 +138,7 @@
             </div>
         </section>
 
-        <!-- MOBİL OVERLAY (Karanlık Arkaplan) -->
+        <!-- MOBİL OVERLAY -->
         <div id="mobile-sidebar-overlay" onclick="toggleMobileCart(false)" class="fixed inset-0 bg-slate-900/60 z-30 hidden lg:hidden backdrop-blur-sm transition-opacity opacity-0 duration-300"></div>
 
         <!-- 2. SAĞ PANEL: Aktif Adisyon -->
@@ -150,7 +150,7 @@
                     <div class="flex-1 min-w-0">
                         <div class="flex items-center space-x-1.5">
                             <h3 id="active-table-name" class="font-bold text-slate-800 text-sm sm:text-base truncate">Masa Seçin</h3>
-                            <button id="btn-edit-table-name" onclick="openEditTableNameModal()" class="only-kasa hidden text-slate-400 hover:text-amber-700 transition px-2 py-1">
+                            <button onclick="openEditTableNameModal()" class="only-kasa hidden text-slate-400 hover:text-amber-700 transition px-2 py-1">
                                 <i class="fa-solid fa-pen text-xs"></i>
                             </button>
                         </div>
@@ -158,7 +158,7 @@
                     </div>
                 </div>
                 <div class="flex items-center space-x-1">
-                    <button id="btn-delete-table" onclick="triggerTableDeletion()" class="only-kasa hidden text-slate-400 hover:text-red-600 p-2 rounded-lg transition">
+                    <button onclick="triggerTableDeletion()" class="only-kasa hidden text-slate-400 hover:text-red-600 p-2 rounded-lg transition">
                         <i class="fa-solid fa-trash-can text-sm sm:text-base"></i>
                     </button>
                     <button onclick="toggleMobileCart(false)" class="lg:hidden text-slate-600 hover:bg-slate-200 p-2 rounded-lg transition bg-slate-100 ml-1 border border-slate-200">
@@ -196,8 +196,8 @@
                     <span class="tracking-wider">SİPARİŞ EKLEYİN</span>
                 </button>
 
-                <!-- SADECE KASADA Görünen Ödeme/İptal Butonları (.only-kasa sınıfı sayesinde garsonlarda görünmez) -->
-                <div id="kasa-actions" class="only-kasa space-y-2 pt-1">
+                <!-- SADECE KASADA Görünen Ödeme/İptal Butonları -->
+                <div class="only-kasa space-y-2 pt-1">
                     <div class="grid grid-cols-2 gap-2">
                         <button id="btn-pay-card" onclick="openPaymentModal('Kart')" disabled class="py-2.5 px-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 disabled:opacity-50 text-white rounded-lg font-bold text-[11px] shadow transition">
                             KART ÖDEME
@@ -260,23 +260,6 @@
         </div>
     </div>
 
-    <!-- Diğer Tüm Modallar -->
-    <div id="add-table-modal" class="only-kasa fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] hidden opacity-0 transition-opacity duration-300 p-4">
-        <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl border border-slate-100 transform scale-95 transition-transform duration-300 mx-auto mt-20">
-            <div class="flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
-                <h4 class="text-lg font-bold text-slate-800 flex items-center space-x-2"><i class="fa-solid fa-chair text-amber-700"></i><span>Yeni Masa Ekle</span></h4>
-                <button onclick="closeModal('add-table-modal')" class="text-slate-400 hover:text-slate-600 p-2 bg-slate-100 rounded-lg"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-            <form onsubmit="saveNewTable(event)" class="space-y-4">
-                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Masa Adı / No</label><input type="text" id="new-table-name" required placeholder="Örn: Masa 13" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-amber-200 outline-none"></div>
-                <div class="flex justify-end space-x-3 pt-4 border-t border-slate-50">
-                    <button type="button" onclick="closeModal('add-table-modal')" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold rounded-xl transition">İptal</button>
-                    <button type="submit" class="px-4 py-2.5 bg-amber-700 hover:bg-amber-800 text-white text-sm font-semibold rounded-xl transition shadow-md">Oluştur</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
     <!-- Onay Modalı -->
     <div id="confirm-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] hidden opacity-0 transition-opacity duration-300 p-4">
         <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl border border-slate-100 transform scale-95 transition-transform duration-300 mx-auto mt-20">
@@ -304,6 +287,26 @@
         </div>
     </div>
 
+    <!-- Masa Ekle Modalı -->
+    <div id="add-table-modal" class="only-kasa fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] hidden opacity-0 transition-opacity duration-300 p-4">
+        <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl border border-slate-100 transform scale-95 transition-transform duration-300 mx-auto mt-20">
+            <div class="flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
+                <h4 class="text-lg font-bold text-slate-800 flex items-center space-x-2">
+                    <i class="fa-solid fa-chair text-amber-700"></i><span>Yeni Masa Ekle</span>
+                </h4>
+                <button onclick="closeModal('add-table-modal')" class="text-slate-400 hover:text-slate-600 p-2 bg-slate-100 rounded-lg"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form onsubmit="saveNewTable(event)" class="space-y-4">
+                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Masa Adı / No</label><input type="text" id="new-table-name" required placeholder="Örn: Masa 13" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm outline-none"></div>
+                <div class="flex justify-end space-x-3 pt-4 border-t border-slate-50">
+                    <button type="button" onclick="closeModal('add-table-modal')" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold rounded-xl transition">İptal</button>
+                    <button type="submit" class="px-4 py-2.5 bg-amber-700 hover:bg-amber-800 text-white text-sm font-semibold rounded-xl transition shadow-md">Oluştur</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Masa Düzenleme Modalı -->
     <div id="edit-table-name-modal" class="only-kasa fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] hidden opacity-0 transition-opacity duration-300 p-4">
         <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl border border-slate-100 transform scale-95 transition-transform duration-300 mx-auto mt-20">
             <div class="flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
@@ -312,11 +315,8 @@
                 </h4>
                 <button onclick="closeModal('edit-table-name-modal')" class="text-slate-400 hover:text-slate-600 p-2 bg-slate-100 rounded-lg"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
-            <form id="edit-table-name-form" onsubmit="saveEditedTableName(event)" class="space-y-4">
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Yeni Masa Adı</label>
-                    <input type="text" id="edit-table-title" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:bg-white focus:border-amber-400 focus:ring-2 focus:ring-amber-100 transition outline-none">
-                </div>
+            <form onsubmit="saveEditedTableName(event)" class="space-y-4">
+                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Yeni Masa Adı</label><input type="text" id="edit-table-title" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm outline-none"></div>
                 <div class="flex justify-end space-x-3 pt-4 border-t border-slate-50">
                     <button type="button" onclick="closeModal('edit-table-name-modal')" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold rounded-xl transition">İptal</button>
                     <button type="submit" class="px-4 py-2.5 bg-amber-700 hover:bg-amber-800 text-white text-sm font-semibold rounded-xl transition shadow-md">Kaydet</button>
@@ -325,13 +325,16 @@
         </div>
     </div>
 
+    <!-- Ürün Ekleme Modalı -->
     <div id="add-product-modal" class="only-kasa fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] hidden opacity-0 transition-opacity duration-300 p-4">
         <div class="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl border border-slate-100 transform scale-95 transition-transform duration-300 mx-auto mt-20">
             <div class="flex items-center justify-between mb-5 border-b border-slate-100 pb-3">
-                <h4 class="text-lg font-bold text-slate-800 flex items-center space-x-2"><i class="fa-solid fa-circle-plus text-amber-700"></i><span>Yeni Ürün Ekle</span></h4>
+                <h4 class="text-lg font-bold text-slate-800 flex items-center space-x-2">
+                    <i class="fa-solid fa-circle-plus text-amber-700"></i><span>Yeni Ürün Ekle</span>
+                </h4>
                 <button onclick="closeModal('add-product-modal')" class="text-slate-400 hover:text-slate-600 p-2 bg-slate-100 rounded-lg"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
-            <form onsubmit="saveNewProduct(event)" class="space-y-4">
+            <form id="add-product-form" onsubmit="saveNewProduct(event)" class="space-y-4">
                 <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Ürün Adı</label><input type="text" id="new-prod-name" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm outline-none"></div>
                 <div class="grid grid-cols-2 gap-4">
                     <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Fiyat (₺)</label><input type="number" id="new-prod-price" required min="1" step="0.5" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm outline-none"></div>
@@ -350,6 +353,7 @@
         </div>
     </div>
 
+    <!-- Ürün Düzenleme Modalı -->
     <div id="edit-product-modal" class="only-kasa fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] hidden opacity-0 transition-opacity duration-300 p-4">
         <div class="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl border border-slate-100 transform scale-95 transition-transform duration-300 mx-auto mt-20">
             <div class="flex items-center justify-between mb-5 border-b border-slate-100 pb-3">
@@ -358,38 +362,20 @@
                 </h4>
                 <button onclick="closeModal('edit-product-modal')" class="text-slate-400 hover:text-slate-600 p-2 bg-slate-100 rounded-lg"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
-            
             <form id="edit-product-form" onsubmit="saveEditedProduct(event)" class="space-y-4">
                 <input type="hidden" id="edit-prod-id">
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Ürün Adı</label>
-                    <input type="text" id="edit-prod-name" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:bg-white focus:border-amber-400 focus:ring-2 focus:ring-amber-100 transition outline-none">
-                </div>
+                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Ürün Adı</label><input type="text" id="edit-prod-name" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm outline-none"></div>
                 <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Fiyat (₺)</label>
-                        <input type="number" id="edit-prod-price" required min="1" step="0.5" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:bg-white focus:border-amber-400 focus:ring-2 focus:ring-amber-100 transition outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Kategori</label>
-                        <select id="edit-prod-category" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:bg-white focus:border-amber-400 focus:ring-2 focus:ring-amber-100 transition outline-none">
-                            <option value="Sıcak İçecekler">Sıcak İçecekler</option>
-                            <option value="Soğuk İçecekler">Soğuk İçecekler</option>
-                            <option value="Tatlılar">Tatlılar</option>
-                            <option value="Yiyecekler">Yiyecekler</option>
-                            <option value="Nargile">Nargile</option>
+                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Fiyat (₺)</label><input type="number" id="edit-prod-price" required min="1" step="0.5" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm outline-none"></div>
+                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Kategori</label>
+                        <select id="edit-prod-category" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm outline-none">
+                            <option value="Sıcak İçecekler">Sıcak İçecekler</option><option value="Soğuk İçecekler">Soğuk İçecekler</option><option value="Tatlılar">Tatlılar</option><option value="Yiyecekler">Yiyecekler</option><option value="Nargile">Nargile</option>
                         </select>
                     </div>
                 </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Emoji / İkon</label>
-                    <input type="text" id="edit-prod-emoji" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:bg-white focus:border-amber-400 focus:ring-2 focus:ring-amber-100 transition outline-none">
-                </div>
-                
+                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Emoji / İkon</label><input type="text" id="edit-prod-emoji" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm outline-none"></div>
                 <div class="flex justify-between items-center pt-5 border-t border-slate-100 mt-2">
-                    <button type="button" onclick="deleteProduct()" class="px-4 py-2.5 bg-red-50 hover:bg-red-100 text-red-700 text-sm font-semibold rounded-lg transition flex items-center space-x-1.5 border border-red-100">
-                        <i class="fa-solid fa-trash-can"></i><span>Sil</span>
-                    </button>
+                    <button type="button" onclick="deleteProduct()" class="px-4 py-2.5 bg-red-50 hover:bg-red-100 text-red-700 text-sm font-semibold rounded-lg transition flex items-center space-x-1.5 border border-red-100"><i class="fa-solid fa-trash-can"></i><span>Sil</span></button>
                     <div class="flex space-x-3">
                         <button type="button" onclick="closeModal('edit-product-modal')" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold rounded-lg transition">İptal</button>
                         <button type="submit" class="px-4 py-2.5 bg-amber-700 hover:bg-amber-800 text-white text-sm font-semibold rounded-xl transition shadow-md">Güncelle</button>
@@ -399,6 +385,7 @@
         </div>
     </div>
 
+    <!-- Raporlar Modalı -->
     <div id="reports-modal" class="only-kasa fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[60] hidden opacity-0 transition-opacity duration-300 p-2 sm:p-4">
         <div class="bg-white rounded-3xl w-full max-w-5xl h-[95vh] sm:h-auto sm:max-h-[90vh] flex flex-col shadow-2xl transform scale-95 transition-transform duration-300 mx-auto mt-4 sm:mt-10 overflow-hidden">
             <div class="p-4 sm:p-6 bg-slate-50 border-b border-slate-200 flex justify-between items-center shrink-0">
@@ -406,7 +393,7 @@
                     <div class="p-2.5 sm:p-3 bg-amber-800 text-white rounded-xl shadow-inner"><i class="fa-solid fa-chart-pie text-lg sm:text-xl"></i></div>
                     <div><h3 class="text-lg sm:text-xl font-bold text-slate-800 font-serif">Gün Sonu Raporu</h3></div>
                 </div>
-                <button onclick="closeModal('reports-modal')" class="p-2 text-slate-400 hover:bg-slate-200 hover:text-slate-700 rounded-xl transition bg-slate-100"><i class="fa-solid fa-xmark text-xl px-1"></i></button>
+                <button onclick="closeReportsModal()" class="p-2 text-slate-400 hover:bg-slate-200 hover:text-slate-700 rounded-xl transition bg-slate-100"><i class="fa-solid fa-xmark text-xl px-1"></i></button>
             </div>
             <div class="p-4 sm:p-6 overflow-y-auto space-y-6 flex-1 bg-slate-50/50 min-h-0">
                 <div>
@@ -420,14 +407,14 @@
                 </div>
             </div>
             <div class="p-4 sm:p-6 bg-white border-t flex justify-end shrink-0">
-                <button onclick="triggerEndDayClosure()" class="w-full sm:w-auto px-6 py-3.5 bg-red-600 hover:bg-red-700 text-white text-sm font-bold rounded-xl shadow-lg">
+                <button onclick="triggerEndDayClosure()" class="w-full sm:w-auto px-6 py-3.5 bg-red-600 hover:bg-red-700 text-white text-sm font-bold rounded-xl shadow-lg flex items-center justify-center space-x-2">
                     <i class="fa-solid fa-lock"></i><span> Gün Sonunu Kapat</span>
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- JAVASCRIPT KISMI -->
+    <!-- JAVASCRIPT -->
     <script>
         // --- Firebase Ayarları ---
         const firebaseConfig = {
@@ -442,11 +429,12 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
+        // --- Veri Yapısı ---
         let state = { tables: {}, menu: [], currentRevenue: { cash: 0, card: 0 }, pendingOrders: [], selectedTableId: null, activeCategory: "Tümü" };
         let localCart = []; 
         let pendingPaymentMethod = null;
 
-        // --- Başlatma & Otomatik Rol ---
+        // --- Başlatma ---
         window.onload = function() {
             initRole();
             initClock();
@@ -458,11 +446,9 @@
             const roleSelect = document.getElementById('device-role');
             
             if (isMobile) {
-                // Mobil cihaz ise zorunlu olarak garson yap ve seçimi hafızaya al
                 roleSelect.value = 'garson';
                 localStorage.setItem('patika_device_role', 'garson');
             } else {
-                // Bilgisayar ise eski ayarlara bak veya kasa yap
                 if (!localStorage.getItem('patika_role_manually_set')) {
                     roleSelect.value = 'kasa';
                 } else {
@@ -496,17 +482,18 @@
             }, 1000);
         }
 
-        // --- Firebase Data ---
         function loadStateFromFirebase() {
-            database.ref('patika_v8').on('value', (snapshot) => {
+            // Veritabanı anahtarı güncellendi, temiz bir sayfa
+            database.ref('patika_v9').on('value', (snapshot) => {
                 const data = snapshot.val();
                 if (data) {
                     state = data;
-                    // Güvenlik Kalkanları (Safe Checks) - Script Error olmaması için
-                    state.tables = state.tables || {};
-                    state.menu = state.menu || [];
-                    state.currentRevenue = state.currentRevenue || { cash: 0, card: 0 };
-                    state.pendingOrders = state.pendingOrders || [];
+                    
+                    // Güvenlik kalkanları
+                    if (!state.tables) state.tables = {};
+                    if (!state.menu) state.menu = [];
+                    if (!state.currentRevenue) state.currentRevenue = { cash: 0, card: 0 };
+                    if (!state.pendingOrders) state.pendingOrders = [];
                     if (state.selectedTableId === undefined) state.selectedTableId = null;
 
                     renderCategoryTabs();
@@ -545,17 +532,20 @@
         }
 
         function saveStateToFirebase() { 
-            database.ref('patika_v8').set(state); 
+            database.ref('patika_v9').set(state); 
         }
 
-        // --- Modal & UI ---
+        // --- Modallar ve UI Araçları ---
         function openModal(id) {
             const m = document.getElementById(id);
+            if(!m) return;
             m.classList.remove('hidden'); m.classList.add('flex');
             setTimeout(() => { m.classList.remove('opacity-0'); m.querySelector('div').classList.remove('scale-95'); }, 10);
         }
+        
         function closeModal(id) {
             const m = document.getElementById(id);
+            if(!m) return;
             m.classList.add('opacity-0'); m.querySelector('div').classList.add('scale-95');
             setTimeout(() => { m.classList.add('hidden'); m.classList.remove('flex'); }, 300);
         }
@@ -595,11 +585,12 @@
             else document.getElementById('mobile-cart-badge').classList.replace('bg-yellow-400', 'bg-white');
         }
 
-        // --- Masalar ---
+        // --- Masalar ve Menü İşlemleri ---
         function renderTables() {
-            const grid = document.getElementById('tables-grid'); grid.innerHTML = '';
+            const grid = document.getElementById('tables-grid'); 
+            grid.innerHTML = '';
             
-            Object.keys(state.tables).map(Number).sort((a,b)=>a-b).forEach(i => {
+            Object.keys(state.tables || {}).map(Number).sort((a,b)=>a-b).forEach(i => {
                 const table = state.tables[i];
                 const safeOrders = table.orders || [];
                 let total = safeOrders.reduce((s, o) => s + (o.product.price * o.qty), 0);
@@ -635,7 +626,48 @@
             document.getElementById('order-subtotal').textContent = "0.00 ₺"; document.getElementById('order-total-price').textContent = "0.00 ₺";
         }
 
-        // --- Adisyon ---
+        function renderCategoryTabs() {
+            const c = document.getElementById('category-tabs'); c.innerHTML = '';
+            ["Tümü", "Sıcak İçecekler", "Soğuk İçecekler", "Tatlılar", "Yiyecekler", "Nargile"].forEach(cat => {
+                const btn = document.createElement('button');
+                btn.className = `px-3 sm:px-4 py-2 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-semibold transition active:scale-95 border whitespace-nowrap ${state.activeCategory === cat ? 'bg-amber-700 text-white shadow-md border-amber-800' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`;
+                btn.textContent = cat;
+                btn.onclick = () => { state.activeCategory = cat; renderCategoryTabs(); renderMenuItems(); };
+                c.appendChild(btn);
+            });
+        }
+
+        function renderMenuItems() {
+            const grid = document.getElementById('menu-items-grid'); grid.innerHTML = '';
+            let f = state.menu || [];
+            if (state.activeCategory !== "Tümü") f = f.filter(p => p.category === state.activeCategory);
+            const s = document.getElementById('menu-search-input').value.trim().toLocaleLowerCase('tr-TR');
+            if (s) f = f.filter(p => p.name.toLocaleLowerCase('tr-TR').includes(s));
+            if (f.length === 0) { grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400 bg-slate-50 rounded-2xl border border-slate-100 border-dashed"><p class="text-sm font-medium">Uyumlu ürün bulunamadı.</p></div>`; return; }
+
+            f.forEach(p => {
+                const card = document.createElement('button'); card.type = "button";
+                card.className = "w-full bg-white hover:bg-amber-50/50 border border-slate-200 hover:border-amber-200 p-3 sm:p-3.5 rounded-2xl flex flex-col justify-between text-left transition duration-200 shadow-sm hover:shadow-md group relative";
+                card.onclick = (e) => { if (e.target.closest('.edit-btn')) return; addToOrder(p); };
+                let cShort = p.category || ""; if(cShort.includes("Sıcak")) cShort = "Sıcak"; else if(cShort.includes("Soğuk")) cShort = "Soğuk";
+                card.innerHTML = `
+                    <div class="flex items-start justify-between w-full">
+                        <span class="text-xl sm:text-2xl bg-slate-50 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-xl border border-slate-100 group-hover:bg-white transition">${p.emoji || '☕'}</span>
+                        <div class="flex items-center space-x-1">
+                            <div onclick="openEditProductModal(${p.id}, event)" class="only-kasa edit-btn p-1.5 text-slate-400 hover:text-amber-700 transition" title="Düzenle"><i class="fa-solid fa-pen text-[10px]"></i></div>
+                            <span class="text-[8px] sm:text-[9px] bg-slate-100 text-slate-500 px-1.5 sm:px-2 py-1 rounded-md font-bold uppercase">${cShort}</span>
+                        </div>
+                    </div>
+                    <div class="mt-3 sm:mt-4 w-full">
+                        <h4 class="font-bold text-slate-700 text-xs sm:text-sm leading-tight line-clamp-2">${p.name}</h4>
+                        <p class="font-mono text-sm font-extrabold text-amber-700 mt-1 sm:mt-1.5">${p.price.toFixed(2)} ₺</p>
+                    </div>`;
+                grid.appendChild(card);
+            });
+        }
+        function filterMenuItems() { renderMenuItems(); }
+
+        // --- Adisyon Listesi ---
         function renderActiveOrder() {
             if (!state.selectedTableId || !state.tables[state.selectedTableId]) return;
             const table = state.tables[state.selectedTableId];
@@ -649,7 +681,6 @@
 
             // 1. ONAYLANMIŞ ÜRÜNLER
             if (safeOrders.length > 0) {
-                document.getElementById('active-table-status').textContent = "Hesap Açık";
                 safeOrders.forEach((item, index) => {
                     totalApproved += item.product.price * item.qty;
                     const row = document.createElement('div');
@@ -663,7 +694,7 @@
                     `;
                     container.appendChild(row);
                 });
-            } else { document.getElementById('active-table-status').textContent = "Adisyon Boş"; }
+            }
 
             // 2. MUTFAK ONAYI BEKLEYENLER
             const tablePending = (state.pendingOrders || []).filter(p => p.tableId === table.id);
@@ -701,6 +732,10 @@
                 });
             }
 
+            if(safeOrders.length === 0 && tablePending.length === 0 && localCart.length === 0) {
+                container.innerHTML = `<div class="h-full flex flex-col items-center justify-center text-center text-slate-400 py-10"><div class="w-16 h-16 sm:w-20 sm:h-20 bg-slate-50 rounded-full flex items-center justify-center mb-4 border border-slate-100 shadow-inner"><i class="fa-solid fa-concierge-bell text-2xl sm:text-3xl text-slate-300"></i></div><p class="text-sm font-semibold text-slate-600">Boş Adisyon</p></div>`;
+            }
+
             // Buton Durumları
             const btnSend = document.getElementById('btn-send-order');
             if(localCart.length > 0) {
@@ -724,15 +759,7 @@
             document.getElementById('order-total-price').textContent = `${total.toFixed(2)} ₺`;
         }
 
-        function toggleActionButtons(enabled) {
-            document.getElementById('btn-send-order').disabled = true;
-            document.getElementById('btn-pay-card').disabled = true;
-            document.getElementById('btn-pay-cash').disabled = true;
-            document.getElementById('btn-cancel-order').disabled = true;
-            document.getElementById('btn-discount-order').disabled = true;
-        }
-
-        // --- Garson Sipariş İşlemleri ---
+        // --- Garson Sipariş Sepeti ---
         function addToOrder(product) {
             if (!state.selectedTableId) return showToast("Lütfen sol taraftan bir Masa Seçin!", "error");
             const existing = localCart.find(i => i.product.id === product.id);
@@ -832,7 +859,7 @@
         function rejectPending(id) {
             state.pendingOrders = state.pendingOrders.filter(x => x.id !== id);
             saveStateToFirebase(); 
-            showToast("Sipariş iptal edildi.", 'error');
+            showToast("Sipariş reddedildi.", 'error');
         }
 
         // --- Profesyonel Tahsilat İşlemi ---
@@ -870,8 +897,6 @@
             if (pendingPaymentMethod === 'Nakit') state.currentRevenue.cash += total; 
             else state.currentRevenue.card += total;
             
-            state.currentRevenue.discountTotal = (state.currentRevenue.discountTotal || 0) + discount;
-            
             t.orders = []; t.status = 'empty'; t.discount = 0;
             saveStateToFirebase(); 
             closeModal('payment-modal');
@@ -884,6 +909,12 @@
             
             openConfirmModal("Komple Adisyon İptali", `Tüm adisyonu iptal etmek istediğinize emin misiniz?`, true, () => {
                 const total = t.orders.reduce((sum, i) => sum + (i.product.price * i.qty), 0);
+                
+                if(!state.cancelledLogs) state.cancelledLogs = [];
+                state.cancelledLogs.push({
+                    id: Date.now(), tableName: t.name, time: new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }),
+                    detail: `Komple İptal`, price: total, reason: getSelectedCancelReason()
+                });
                 
                 state.currentRevenue.cancelled += total;
                 t.orders = []; t.status = 'empty'; t.discount = 0;
@@ -900,48 +931,6 @@
             saveStateToFirebase();
         }
 
-        // --- Menü Render ---
-        function renderCategoryTabs() {
-            const c = document.getElementById('category-tabs'); c.innerHTML = '';
-            ["Tümü", "Sıcak İçecekler", "Soğuk İçecekler", "Tatlılar", "Yiyecekler", "Nargile"].forEach(cat => {
-                const btn = document.createElement('button');
-                btn.className = `px-3 sm:px-4 py-2 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-semibold transition active:scale-95 border whitespace-nowrap ${state.activeCategory === cat ? 'bg-amber-700 text-white shadow-md border-amber-800' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`;
-                btn.textContent = cat;
-                btn.onclick = () => { state.activeCategory = cat; renderCategoryTabs(); renderMenuItems(); };
-                c.appendChild(btn);
-            });
-        }
-
-        function renderMenuItems() {
-            const grid = document.getElementById('menu-items-grid'); grid.innerHTML = '';
-            let f = state.menu || [];
-            if (state.activeCategory !== "Tümü") f = f.filter(p => p.category === state.activeCategory);
-            const s = document.getElementById('menu-search-input').value.trim().toLocaleLowerCase('tr-TR');
-            if (s) f = f.filter(p => p.name.toLocaleLowerCase('tr-TR').includes(s));
-            if (f.length === 0) { grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400 bg-slate-50 rounded-2xl border border-slate-100 border-dashed"><p class="text-sm font-medium">Uyumlu ürün bulunamadı.</p></div>`; return; }
-
-            f.forEach(p => {
-                const card = document.createElement('button'); card.type = "button";
-                card.className = "w-full bg-white hover:bg-amber-50/50 border border-slate-200 hover:border-amber-200 p-3 sm:p-3.5 rounded-2xl flex flex-col justify-between text-left transition duration-200 shadow-sm hover:shadow-md group relative";
-                card.onclick = (e) => { if (e.target.closest('.edit-btn')) return; addToOrder(p); };
-                let cShort = p.category || ""; if(cShort.includes("Sıcak")) cShort = "Sıcak"; else if(cShort.includes("Soğuk")) cShort = "Soğuk";
-                card.innerHTML = `
-                    <div class="flex items-start justify-between w-full">
-                        <span class="text-xl sm:text-2xl bg-slate-50 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-xl border border-slate-100 group-hover:bg-white transition">${p.emoji || '☕'}</span>
-                        <div class="flex items-center space-x-1">
-                            <div onclick="openEditProductModal(${p.id}, event)" class="only-kasa edit-btn p-1.5 text-slate-400 hover:text-amber-700 transition" title="Düzenle"><i class="fa-solid fa-pen text-[10px]"></i></div>
-                            <span class="text-[8px] sm:text-[9px] bg-slate-100 text-slate-500 px-1.5 sm:px-2 py-1 rounded-md font-bold uppercase">${cShort}</span>
-                        </div>
-                    </div>
-                    <div class="mt-3 sm:mt-4 w-full">
-                        <h4 class="font-bold text-slate-700 text-xs sm:text-sm leading-tight line-clamp-2">${p.name}</h4>
-                        <p class="font-mono text-sm font-extrabold text-amber-700 mt-1 sm:mt-1.5">${p.price.toFixed(2)} ₺</p>
-                    </div>`;
-                grid.appendChild(card);
-            });
-        }
-        function filterMenuItems() { renderMenuItems(); }
-
         function updateStats() {
             let rev = 0;
             if(state.tables) Object.values(state.tables).forEach(t => {
@@ -953,13 +942,52 @@
             document.getElementById('header-total-revenue').textContent = `${((state.currentRevenue.cash || 0) + (state.currentRevenue.card || 0)).toFixed(2)} ₺`;
         }
 
-        // --- Yeni Masa ve Rapor İşlemleri ---
+        // --- Modallar ve İşlemler (Masa, Ürün, Onay, Rapor) ---
+        let onConfirmApproveCallback = null;
+        function openConfirmModal(title, msg, showReason = false, cb) {
+            document.getElementById('confirm-title').textContent = title; document.getElementById('confirm-message').textContent = msg;
+            document.getElementById('cancel-reason-container').classList.toggle('hidden', !showReason);
+            if(showReason) { document.getElementById('cancel-reason-select').value = "Müşteri Vazgeçti"; document.getElementById('cancel-reason-custom').classList.add('hidden'); }
+            onConfirmApproveCallback = cb;
+            document.getElementById('cancel-reason-select').onchange = function() { document.getElementById('cancel-reason-custom').classList.toggle('hidden', this.value !== 'Diğer'); };
+            openModal('confirm-modal');
+        }
+        function getSelectedCancelReason() { const v = document.getElementById('cancel-reason-select').value; return v === 'Diğer' ? (document.getElementById('cancel-reason-custom').value.trim() || "Belirtilmemiş") : v; }
+        document.getElementById('confirm-btn-cancel').onclick = () => closeModal('confirm-modal');
+        document.getElementById('confirm-btn-approve').onclick = () => { if (onConfirmApproveCallback) onConfirmApproveCallback(); closeModal('confirm-modal'); };
+
         function openAddTableModal() { const k = state.tables ? Object.keys(state.tables).map(Number) : []; document.getElementById('new-table-name').value = `Masa ${k.length > 0 ? Math.max(...k) + 1 : 1}`; openModal('add-table-modal'); }
         function saveNewTable(e) { e.preventDefault(); const n = document.getElementById('new-table-name').value.trim(); if (!n) return; if(!state.tables) state.tables = {}; const k = Object.keys(state.tables).map(Number); const id = k.length > 0 ? Math.max(...k) + 1 : 1; state.tables[id] = { id, name: n, orders: [], discount: 0, status: 'empty' }; saveStateToFirebase(); closeModal('add-table-modal'); showToast("Masa eklendi.", "success"); }
+
+        function openEditTableNameModal() { if (!state.selectedTableId || !state.tables[state.selectedTableId]) return; document.getElementById('edit-table-title').value = state.tables[state.selectedTableId].name; openModal('edit-table-name-modal'); }
+        function saveEditedTableName(e) { e.preventDefault(); const n = document.getElementById('edit-table-title').value.trim(); if (!n || !state.selectedTableId) return; state.tables[state.selectedTableId].name = n; saveStateToFirebase(); closeModal('edit-table-name-modal'); showToast("Masa güncellendi.", "success"); }
+        function triggerTableDeletion() { if (!state.selectedTableId || !state.tables[state.selectedTableId]) return; if (state.tables[state.selectedTableId].status === 'occupied') return showToast("Dolu masayı silemezsiniz!", "error"); openConfirmModal("Masayı Sil", "Silmek istediğinize emin misiniz?", false, () => { delete state.tables[state.selectedTableId]; state.selectedTableId = null; saveStateToFirebase(); showToast("Masa kaldırıldı.", "success"); }); }
+
+        function openAddProductModal() { openModal('add-product-modal'); }
+        function saveNewProduct(e) { e.preventDefault(); const n = document.getElementById('new-prod-name').value.trim(); const p = parseFloat(document.getElementById('new-prod-price').value); const c = document.getElementById('new-prod-category').value; let em = document.getElementById('new-prod-emoji').value.trim(); if (!em) em = c.includes('Sıcak') ? '☕' : c.includes('Soğuk') ? '🥤' : c.includes('Tatlı') ? '🍰' : c === 'Nargile' ? '💨' : '🍽️'; if(!state.menu) state.menu = []; state.menu.push({ id: state.menu.length > 0 ? Math.max(...state.menu.map(x => x.id)) + 1 : 1, name: n, price: p, category: c, emoji: em }); saveStateToFirebase(); closeModal('add-product-modal'); setTimeout(()=>document.getElementById('add-product-form').reset(), 300); showToast("Ürün eklendi."); }
+
+        function openEditProductModal(id, e) { if (e) e.stopPropagation(); if(!state.menu) return; const p = state.menu.find(x => x.id === id); if (!p) return; document.getElementById('edit-prod-id').value = p.id; document.getElementById('edit-prod-name').value = p.name; document.getElementById('edit-prod-price').value = p.price; document.getElementById('edit-prod-category').value = p.category; document.getElementById('edit-prod-emoji').value = p.emoji || ''; openModal('edit-product-modal'); }
+        function saveEditedProduct(e) { e.preventDefault(); const id = parseInt(document.getElementById('edit-prod-id').value); const n = document.getElementById('edit-prod-name').value.trim(); const p = parseFloat(document.getElementById('edit-prod-price').value); const c = document.getElementById('edit-prod-category').value; let em = document.getElementById('edit-prod-emoji').value.trim(); if (!em) em = c.includes('Sıcak') ? '☕' : c.includes('Soğuk') ? '🥤' : c.includes('Tatlı') ? '🍰' : c === 'Nargile' ? '💨' : '🍽️'; if(!state.menu) return; const pIdx = state.menu.findIndex(x => x.id === id); if (pIdx > -1) { state.menu[pIdx] = { id, name: n, price: p, category: c, emoji: em }; if(state.tables) Object.values(state.tables).forEach(t => { if(t.orders) t.orders.forEach(o => { if (o.product.id === id) o.product = { id, name: n, price: p, category: c, emoji: em }; }); }); saveStateToFirebase(); closeModal('edit-product-modal'); setTimeout(()=>document.getElementById('edit-product-form').reset(), 300); showToast("Güncellendi."); } }
+        function deleteProduct() { const id = parseInt(document.getElementById('edit-prod-id').value); openConfirmModal("Ürünü Sil", "Kalıcı olarak silmek istediğinize emin misiniz?", false, () => { if(state.menu) state.menu = state.menu.filter(x => x.id !== id); saveStateToFirebase(); closeModal('edit-product-modal'); showToast("Ürün silindi.", "error"); }); }
 
         function openReportsModal() {
             document.getElementById('modal-net-revenue').textContent = `${((state.currentRevenue.cash || 0) + (state.currentRevenue.card || 0)).toFixed(2)} ₺`;
             openModal('reports-modal');
+        }
+        function closeReportsModal() { closeModal('reports-modal'); }
+        function triggerEndDayClosure() {
+            let has = false;
+            if(state.tables) Object.values(state.tables).forEach(t => { if (t.status === 'occupied') has = true; });
+            openConfirmModal("Gün Sonu", has ? "Açık masalar var. Kapatırsanız adisyonlar SİLİNİR. Devam?" : "Gün sonunu kapatıp kasayı sıfırlamak istiyor musunuz?", false, () => {
+                const today = new Date();
+                if(!state.historyReports) state.historyReports = [];
+                state.historyReports.push({ id: Date.now(), date: today.toLocaleDateString('tr-TR'), time: today.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }), cash: state.currentRevenue.cash, card: state.currentRevenue.card, total: state.currentRevenue.cash + state.currentRevenue.card });
+                state.currentRevenue = { cash: 0, card: 0, cancelled: 0, discountTotal: 0 };
+                state.cancelledLogs = []; 
+                if(state.tables) Object.values(state.tables).forEach(t => { t.orders = []; t.discount = 0; t.status = 'empty'; });
+                state.pendingOrders = [];
+                saveStateToFirebase(); closeReportsModal(); showToast("Gün sonu kapatıldı.", "success");
+            });
         }
     </script>
 </body>
